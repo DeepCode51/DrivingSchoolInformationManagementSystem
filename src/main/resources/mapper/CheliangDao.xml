@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.CheliangDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.jiaolian_id as jiaolianId
+        ,a.cheliang_uuid_number as cheliangUuidNumber
+        ,a.cheliang_name as cheliangName
+        ,a.cheliang_types as cheliangTypes
+        ,a.cheliang_content as cheliangContent
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.CheliangView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,jiaolian.jiaolian_name as jiaolianName
+        ,jiaolian.jiaolian_phone as jiaolianPhone
+        ,jiaolian.jiaolian_id_number as jiaolianIdNumber
+        ,jiaolian.jiaolian_photo as jiaolianPhoto
+        ,jiaolian.jiaolian_email as jiaolianEmail
+
+        FROM cheliang  a
+        left JOIN jiaolian jiaolian ON a.jiaolian_id = jiaolian.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.jiaolianId != null and params.jiaolianId != ''">
+                and (
+                    a.jiaolian_id = #{params.jiaolianId}
+                )
+            </if>
+            <if test=" params.cheliangUuidNumber != '' and params.cheliangUuidNumber != null and params.cheliangUuidNumber != 'null' ">
+                and a.cheliang_uuid_number like CONCAT('%',#{params.cheliangUuidNumber},'%')
+            </if>
+            <if test=" params.cheliangName != '' and params.cheliangName != null and params.cheliangName != 'null' ">
+                and a.cheliang_name like CONCAT('%',#{params.cheliangName},'%')
+            </if>
+            <if test="params.cheliangTypes != null and params.cheliangTypes != ''">
+                and a.cheliang_types = #{params.cheliangTypes}
+            </if>
+            <if test=" params.cheliangContent != '' and params.cheliangContent != null and params.cheliangContent != 'null' ">
+                and a.cheliang_content like CONCAT('%',#{params.cheliangContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断教练的id不为空 -->
+            <if test=" params.jiaolianIdNotNull != '' and params.jiaolianIdNotNull != null and params.jiaolianIdNotNull != 'null' ">
+                and a.jiaolian_id IS NOT NULL
+            </if>
+            <if test=" params.jiaolianName != '' and params.jiaolianName != null and params.jiaolianName != 'null' ">
+                and jiaolian.jiaolian_name like CONCAT('%',#{params.jiaolianName},'%')
+            </if>
+            <if test=" params.jiaolianPhone != '' and params.jiaolianPhone != null and params.jiaolianPhone != 'null' ">
+                and jiaolian.jiaolian_phone like CONCAT('%',#{params.jiaolianPhone},'%')
+            </if>
+            <if test=" params.jiaolianIdNumber != '' and params.jiaolianIdNumber != null and params.jiaolianIdNumber != 'null' ">
+                and jiaolian.jiaolian_id_number like CONCAT('%',#{params.jiaolianIdNumber},'%')
+            </if>
+            <if test=" params.jiaolianEmail != '' and params.jiaolianEmail != null and params.jiaolianEmail != 'null' ">
+                and jiaolian.jiaolian_email like CONCAT('%',#{params.jiaolianEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>

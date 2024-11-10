@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.KaoshiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.xueyuan_id as xueyuanId
+        ,a.jiaolian_id as jiaolianId
+        ,a.kaoshi_uuid_number as kaoshiUuidNumber
+        ,a.kaoshi_name as kaoshiName
+        ,a.kaoshi_types as kaoshiTypes
+        ,a.kaoshi_number as kaoshiNumber
+        ,a.tongguo_types as tongguoTypes
+        ,a.kaoshi_content as kaoshiContent
+        ,a.kaoshi_time as kaoshiTime
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.KaoshiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,jiaolian.jiaolian_name as jiaolianName
+        ,jiaolian.jiaolian_phone as jiaolianPhone
+        ,jiaolian.jiaolian_id_number as jiaolianIdNumber
+        ,jiaolian.jiaolian_photo as jiaolianPhoto
+        ,jiaolian.jiaolian_email as jiaolianEmail
+        ,xueyuan.xueyuan_name as xueyuanName
+        ,xueyuan.xueyuan_phone as xueyuanPhone
+        ,xueyuan.xueyuan_id_number as xueyuanIdNumber
+        ,xueyuan.xueyuan_photo as xueyuanPhoto
+        ,xueyuan.xueyuan_email as xueyuanEmail
+
+        FROM kaoshi  a
+        left JOIN jiaolian jiaolian ON a.jiaolian_id = jiaolian.id
+        left JOIN xueyuan xueyuan ON a.xueyuan_id = xueyuan.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.xueyuanId != null and params.xueyuanId != ''">
+                and (
+                    a.xueyuan_id = #{params.xueyuanId}
+                )
+            </if>
+            <if test="params.jiaolianId != null and params.jiaolianId != ''">
+                and (
+                    a.jiaolian_id = #{params.jiaolianId}
+                )
+            </if>
+            <if test=" params.kaoshiUuidNumber != '' and params.kaoshiUuidNumber != null and params.kaoshiUuidNumber != 'null' ">
+                and a.kaoshi_uuid_number like CONCAT('%',#{params.kaoshiUuidNumber},'%')
+            </if>
+            <if test=" params.kaoshiName != '' and params.kaoshiName != null and params.kaoshiName != 'null' ">
+                and a.kaoshi_name like CONCAT('%',#{params.kaoshiName},'%')
+            </if>
+            <if test="params.kaoshiTypes != null and params.kaoshiTypes != ''">
+                and a.kaoshi_types = #{params.kaoshiTypes}
+            </if>
+            <if test="params.kaoshiNumberStart != null ">
+                <![CDATA[  and a.kaoshi_number >= #{params.kaoshiNumberStart}   ]]>
+            </if>
+            <if test="params.kaoshiNumberEnd != null ">
+                <![CDATA[  and a.kaoshi_number <= #{params.kaoshiNumberEnd}   ]]>
+            </if>
+            <if test="params.tongguoTypes != null and params.tongguoTypes != ''">
+                and a.tongguo_types = #{params.tongguoTypes}
+            </if>
+            <if test=" params.kaoshiContent != '' and params.kaoshiContent != null and params.kaoshiContent != 'null' ">
+                and a.kaoshi_content like CONCAT('%',#{params.kaoshiContent},'%')
+            </if>
+            <if test=" params.kaoshiTimeStart != '' and params.kaoshiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.kaoshi_time) >= UNIX_TIMESTAMP(#{params.kaoshiTimeStart}) ]]>
+            </if>
+            <if test=" params.kaoshiTimeEnd != '' and params.kaoshiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.kaoshi_time) <= UNIX_TIMESTAMP(#{params.kaoshiTimeEnd}) ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断教练的id不为空 -->
+            <if test=" params.jiaolianIdNotNull != '' and params.jiaolianIdNotNull != null and params.jiaolianIdNotNull != 'null' ">
+                and a.jiaolian_id IS NOT NULL
+            </if>
+            <if test=" params.jiaolianName != '' and params.jiaolianName != null and params.jiaolianName != 'null' ">
+                and jiaolian.jiaolian_name like CONCAT('%',#{params.jiaolianName},'%')
+            </if>
+            <if test=" params.jiaolianPhone != '' and params.jiaolianPhone != null and params.jiaolianPhone != 'null' ">
+                and jiaolian.jiaolian_phone like CONCAT('%',#{params.jiaolianPhone},'%')
+            </if>
+            <if test=" params.jiaolianIdNumber != '' and params.jiaolianIdNumber != null and params.jiaolianIdNumber != 'null' ">
+                and jiaolian.jiaolian_id_number like CONCAT('%',#{params.jiaolianIdNumber},'%')
+            </if>
+            <if test=" params.jiaolianEmail != '' and params.jiaolianEmail != null and params.jiaolianEmail != 'null' ">
+                and jiaolian.jiaolian_email like CONCAT('%',#{params.jiaolianEmail},'%')
+            </if>
+                <!-- 判断学员的id不为空 -->
+            <if test=" params.xueyuanIdNotNull != '' and params.xueyuanIdNotNull != null and params.xueyuanIdNotNull != 'null' ">
+                and a.xueyuan_id IS NOT NULL
+            </if>
+            <if test=" params.xueyuanName != '' and params.xueyuanName != null and params.xueyuanName != 'null' ">
+                and xueyuan.xueyuan_name like CONCAT('%',#{params.xueyuanName},'%')
+            </if>
+            <if test=" params.xueyuanPhone != '' and params.xueyuanPhone != null and params.xueyuanPhone != 'null' ">
+                and xueyuan.xueyuan_phone like CONCAT('%',#{params.xueyuanPhone},'%')
+            </if>
+            <if test=" params.xueyuanIdNumber != '' and params.xueyuanIdNumber != null and params.xueyuanIdNumber != 'null' ">
+                and xueyuan.xueyuan_id_number like CONCAT('%',#{params.xueyuanIdNumber},'%')
+            </if>
+            <if test=" params.xueyuanEmail != '' and params.xueyuanEmail != null and params.xueyuanEmail != 'null' ">
+                and xueyuan.xueyuan_email like CONCAT('%',#{params.xueyuanEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
